@@ -353,6 +353,27 @@ python scripts/cleanup.py
 
 This removes the agent version and vector store created by the demo.
 
+## Evaluation Results
+
+The RAG agent was evaluated across five retrieval, reasoning, and
+hallucination-control scenarios.
+
+| Evaluation Scenario | Result |
+|---|---|
+| Policy threshold reasoning | ✅ PASS |
+| Hallucination control | ✅ PASS |
+| Future threshold interpretation | ✅ PASS |
+| Operational metric retrieval | ✅ PASS |
+| SOP retrieval | ✅ PASS |
+
+**Pass Rate:** 100%  
+**Average Response Latency:** 5.10 seconds  
+**Unit Tests:** 2/2 passed
+
+The evaluation demonstrates the agent's ability to retrieve relevant
+business documents, reason across multiple sources, apply policy
+thresholds, and avoid unsupported root-cause claims.
+
 ## What I learned
 
 Building this project reinforced several engineering lessons:
