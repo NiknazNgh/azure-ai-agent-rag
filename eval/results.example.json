@@ -1,0 +1,7 @@
+{
+  "note": "Illustrative schema only. Run python scripts/evaluate.py to generate real results from your deployment.",
+  "cases": 5,
+  "passed": "TBD",
+  "pass_rate": "TBD",
+  "average_latency_seconds": "TBD"
+}

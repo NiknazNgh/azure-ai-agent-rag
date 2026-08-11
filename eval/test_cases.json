@@ -1,0 +1,32 @@
+[
+  {
+    "id": "threshold_decision",
+    "question": "Does the July 2026 energy increase require a formal equipment-efficiency investigation? Explain why.",
+    "required_terms": ["12%", "20%", "not mandatory"],
+    "forbidden_terms": ["confirmed equipment failure"]
+  },
+  {
+    "id": "cause_hallucination",
+    "question": "What caused the July 2026 energy consumption increase?",
+    "required_terms": ["not", "confirmed"],
+    "forbidden_terms": ["pump failure caused", "equipment failure caused"]
+  },
+  {
+    "id": "future_threshold",
+    "question": "If energy consumption increases by 24% next month, what action does policy require?",
+    "required_terms": ["formal equipment-efficiency investigation", "five business days"],
+    "forbidden_terms": []
+  },
+  {
+    "id": "metric_retrieval",
+    "question": "Which July KPI decreased by 35 percent compared with June?",
+    "required_terms": ["rainfall"],
+    "forbidden_terms": []
+  },
+  {
+    "id": "sop_retrieval",
+    "question": "Name at least three checks from the equipment efficiency investigation SOP.",
+    "required_terms": ["meter", "runtime", "maintenance"],
+    "forbidden_terms": []
+  }
+]
