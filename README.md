@@ -69,6 +69,7 @@ flowchart LR
 | Streamlit | Interactive recruiter/demo UI |
 | Microsoft Entra ID | Credential-based authentication through `DefaultAzureCredential` |
 | Pytest | Lightweight unit testing |
+| GitHub Actions | Automated unit-test CI on pushes and pull requests |
 
 ## Repository structure
 
@@ -80,6 +81,9 @@ azure-ai-agent-rag/
 ├── requirements.txt
 ├── .env.example
 ├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── tests.yml
 ├── src/
 │   ├── config.py
 │   └── foundry_rag.py
@@ -127,6 +131,10 @@ The repository separates:
 
 The generated Foundry resource identifiers are stored locally in `.rag_resources.json`, which is excluded from Git.
 
+### 5. Automated validation
+
+GitHub Actions runs unit tests automatically on pushes and pull requests to `main`, providing a basic CI quality gate for the application logic.
+
 ## Sample input and expected behavior
 
 ### Example 1 — Cross-document policy reasoning
@@ -161,7 +169,7 @@ The agent should retrieve the policy and state that an increase greater than 20%
 
 ## Evaluation strategy
 
-The project includes a small deterministic evaluation harness in `scripts/evaluate.py`.
+The project includes a deterministic evaluation harness in `scripts/evaluate.py`.
 
 Each test case defines:
 
@@ -183,66 +191,23 @@ Run the evaluation against your deployed agent:
 python scripts/evaluate.py
 ```
 
-The script creates `eval/results.json` with:
+The script creates `eval/results.json` with pass/fail results, response latency, overall pass rate, and generated answers for review.
 
-- pass/fail per test case,
-- overall pass rate,
-- response latency per case,
-- average response latency,
-- full generated answers for review.
+## Evaluation Results
 
-### Evaluation results
+| Evaluation Scenario | Result |
+|---|---|
+| Policy threshold reasoning | ✅ PASS |
+| Hallucination control | ✅ PASS |
+| Future threshold interpretation | ✅ PASS |
+| Operational metric retrieval | ✅ PASS |
+| SOP retrieval | ✅ PASS |
 
-Do not publish invented metrics. After running the evaluation, replace this table with the actual output from your deployment.
+**Pass Rate:** 100%  
+**Average Response Latency:** 5.10 seconds  
+**Unit Tests:** 2/2 passed
 
-| Metric | Result |
-|---|---:|
-| Test cases | 5 |
-| Passed | Run evaluation |
-| Grounded QA pass rate | Run evaluation |
-| Average response latency | Run evaluation |
-
-**Target before pinning the repository:** at least **90% grounded QA pass rate** on the defined test set, with zero hallucinated root-cause claims in the hallucination-control case.
-
-## Screenshots
-
-Add these screenshots before pinning the repository on your GitHub profile.
-
-### 1. Foundry agent configuration
-
-![Foundry agent configuration](assets/screenshots/01-foundry-agent.png)
-
-Show the agent, model deployment, and file-search configuration. Hide subscription IDs, tenant IDs, credentials, and private endpoints.
-
-### 2. Grounded policy answer
-
-![Grounded RAG answer](assets/screenshots/02-grounded-answer.png)
-
-Use the question:
-
-> Does the July 2026 energy increase require a formal investigation?
-
-The screenshot should visibly show the `12%` observation and `>20%` policy threshold.
-
-### 3. Hallucination-control example
-
-![Hallucination control](assets/screenshots/03-hallucination-control.png)
-
-Use the question:
-
-> What caused the July energy increase?
-
-The strongest screenshot is one where the agent clearly says that the cause is **not confirmed by the available documents**.
-
-### 4. Evaluation output
-
-![Evaluation results](assets/screenshots/04-evaluation-results.png)
-
-Capture the terminal after running:
-
-```bash
-python scripts/evaluate.py
-```
+The evaluation demonstrates the agent's ability to retrieve relevant business documents, reason across multiple sources, apply policy thresholds, and avoid unsupported root-cause claims.
 
 ## Setup
 
@@ -260,7 +225,7 @@ You need:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/azure-ai-agent-rag.git
+git clone https://github.com/NiknazNgh/azure-ai-agent-rag.git
 cd azure-ai-agent-rag
 ```
 
@@ -292,22 +257,9 @@ pip install -r requirements.txt
 az login
 ```
 
-Confirm that the intended subscription is active:
-
-```bash
-az account show --output table
-```
-
 ### 5. Configure environment variables
 
-Copy `.env.example` to `.env`.
-
-```text
-FOUNDRY_PROJECT_ENDPOINT=https://<resource-name>.services.ai.azure.com/api/projects/<project-name>
-FOUNDRY_MODEL_DEPLOYMENT_NAME=<your-model-deployment-name>
-```
-
-Do not commit `.env`.
+Copy `.env.example` to `.env` and configure your Foundry project endpoint and model deployment name. Do not commit `.env`.
 
 ### 6. Ingest the knowledge base and create the agent
 
@@ -315,29 +267,17 @@ Do not commit `.env`.
 python scripts/ingest.py
 ```
 
-This step:
-
-1. creates a vector store,
-2. uploads the synthetic knowledge documents,
-3. waits for file ingestion,
-4. creates the Foundry agent with file search,
-5. saves the resource identifiers locally in `.rag_resources.json`.
-
 ### 7. Run the application
 
 ```bash
 streamlit run app.py
 ```
 
-Open the local Streamlit URL shown in your terminal and test the sample questions.
-
 ### 8. Run evaluation
 
 ```bash
 python scripts/evaluate.py
 ```
-
-Review `eval/results.json` before publishing your metrics.
 
 ### 9. Run unit tests
 
@@ -351,61 +291,58 @@ pytest -q
 python scripts/cleanup.py
 ```
 
-This removes the agent version and vector store created by the demo.
+## CI
 
-## Evaluation Results
+The repository includes a GitHub Actions workflow that runs the unit test suite on pushes and pull requests to `main`.
 
-The RAG agent was evaluated across five retrieval, reasoning, and
-hallucination-control scenarios.
-
-| Evaluation Scenario | Result |
-|---|---|
-| Policy threshold reasoning | ✅ PASS |
-| Hallucination control | ✅ PASS |
-| Future threshold interpretation | ✅ PASS |
-| Operational metric retrieval | ✅ PASS |
-| SOP retrieval | ✅ PASS |
-
-**Pass Rate:** 100%  
-**Average Response Latency:** 5.10 seconds  
-**Unit Tests:** 2/2 passed
-
-The evaluation demonstrates the agent's ability to retrieve relevant
-business documents, reason across multiple sources, apply policy
-thresholds, and avoid unsupported root-cause claims.
+```text
+Push / Pull Request
+        ↓
+GitHub Actions
+        ↓
+Python 3.12
+        ↓
+Install dependencies
+        ↓
+pytest
+```
 
 ## What I learned
 
-Building this project reinforced several engineering lessons:
+- **RAG quality depends on evidence design, not only the model.**
+- **Retrieval and reasoning are separate concerns.**
+- **A confident answer is not necessarily a grounded answer.**
+- **Enterprise agents need lifecycle management.**
+- **Authentication and configuration should be separated from source code.**
+- **Evaluation and automated tests make an AI demo more credible and repeatable.**
 
-- **RAG quality depends on evidence design, not only the model.** Documents should contain clear facts, policies, and provenance that the agent can retrieve.
-- **Retrieval and reasoning are separate concerns.** The system must first find the correct evidence and then apply business logic across retrieved sources.
-- **A confident answer is not necessarily a grounded answer.** Evaluation needs explicit tests for unsupported conclusions, not only correct keywords.
-- **Enterprise agents need lifecycle management.** Creating, versioning, evaluating, and cleaning up agent resources should be repeatable.
-- **Authentication and configuration should be separated from code.** Credentials are handled through Azure identity rather than committed secrets.
-- **Evaluation belongs in the repository.** A demo becomes more credible when expected behavior is testable instead of described only in a README.
+## Production Engineering Roadmap
 
-## Future improvements
+The next iteration will extend the project toward a more complete deployment architecture:
 
-- Add Azure AI Search for a larger persistent enterprise knowledge base.
-- Add richer citation rendering in the Streamlit interface.
-- Add structured evaluation for groundedness, relevance, and answer completeness.
-- Add application tracing and latency/token observability.
-- Add CI with GitHub Actions for unit tests and code quality checks.
-- Containerize the Streamlit application and deploy it to Azure.
-- Add role-based document access for multi-user enterprise scenarios.
+- FastAPI REST API
+- structured JSON responses
+- AI tool/function calling
+- retry and resilience patterns
+- Docker containerization
+- Azure Container Apps deployment
+- Microsoft Entra ID / managed identity access control
+- Application Insights and agent tracing
+- deployment-focused GitHub Actions workflow
+
+These items are explicitly a **roadmap** and are not represented as completed production capabilities yet.
 
 ## Skills demonstrated
 
-`Microsoft Foundry` `Azure AI` `Generative AI` `AI Agents` `RAG` `Python` `File Search` `Vector Search` `Prompt Engineering` `Evaluation` `Streamlit` `Microsoft Entra ID` `GitHub`
+`Microsoft Foundry` `Azure AI` `Generative AI` `AI Agents` `RAG` `Python` `File Search` `Vector Search` `Prompt Engineering` `Evaluation` `Streamlit` `Microsoft Entra ID` `Pytest` `GitHub Actions` `GitHub`
 
 ## Author
 
-**Niki**  
-Business Analyst / AI & Automation Developer
+**Niknaz Negahdarhaghighat (Niki)**  
+AI, Data & Automation Professional
 
-- LinkedIn: `YOUR-LINKEDIN-URL`
-- GitHub: `https://github.com/YOUR-USERNAME`
+- LinkedIn: https://www.linkedin.com/in/niknazngh/
+- GitHub: https://github.com/NiknazNgh
 
 ## License
 
